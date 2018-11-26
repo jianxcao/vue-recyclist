@@ -45,15 +45,20 @@
     data() {
       return {
         name: 'VueRecyclist',
+        // 包装后的所有的item，
         items: [], // Wrapped full list items
+        // 容器内所有item的高度
         height: 0, // Full list height
         // 在有占位符的情况下，即tombstone为true的情况下，会同时加载多页，所以需要loading时个数组，表示多页的加载
         loadings: [], // Loading status queue
+        // 可见的item的开始的index
         start: 0, // Visible items start index
+        // start可见的item的offset
         startOffset: 0 // Start item offset
       }
     },
     computed: {
+      // 真正在页面上展示的的items，即可见的items
       visibleItems() {
         return this.items.slice(Math.max(0, this.start - this.size), Math.min(this.items.length, this.start + this.size))
       },
@@ -69,36 +74,44 @@
       }
     },
     props: {
+      // 数据
       list: {
         type: Array,
         required: true
       },
+      // 是否开启占位符
       tombstone: {
         type: Boolean,
         default: false // Whether to show tombstones.
       },
+      // 每一页的大小，注意这里一页面的大小的高度一定要高于容器的高度
       size: {
         type: Number,
         default: 20 // The number of items added each time.
       },
+      //上拉加载时候控制加载的
       offset: {
         type: Number,
-        default: 0 // The number of pixels of additional length to allow scrolling to.
+        default: 100 // The number of pixels of additional length to allow scrolling to.
       },
+      // loadingmore的函数，即加载下一页面的函数
       loadmore: {
         type: Function,
         required: true // The function of loading more items.
       },
+      // 是否显示 loading的控件
       spinner: {
         type: Boolean,
         default: true // Whether to show loading spinner.
       },
+      // 是否显示没有数据的控件
       nomore: {
         type: Boolean,
         default: false // Whether to show 'no more data' status bar
       }
     },
     watch: {
+      // list长度发生变化后，如果是首次长度，就初始化，否则就加载更多的item，这个时候回将loading的状态弹出数组，表示一页已经加载好了
       list(arr) {
         if (arr.length) {
           this.loadings.pop()
@@ -130,11 +143,14 @@
         this.height = this.top = this.start = 0
         this.$el.scrollTop = 0
       },
+      // 这里的load是指在有占位符的情况下，会有限直接展示，占位符，然后在进行数据的加载，否则就是直接加载数据
       load() {
         if (this.tombstone) {
           this.items.length += this.size
+          // 并没有加载数据，去渲染 占位符，占位符渲染后,根据items的长度的变化，在去真正加载数据
           this.loadItems()
         } else if (!this.loading) {
+          // 真正的调用加载数据的方法
           this.getItems()
         }
       },
