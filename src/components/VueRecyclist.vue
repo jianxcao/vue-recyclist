@@ -47,6 +47,7 @@
         name: 'VueRecyclist',
         items: [], // Wrapped full list items
         height: 0, // Full list height
+        // 在有占位符的情况下，即tombstone为true的情况下，会同时加载多页，所以需要loading时个数组，表示多页的加载
         loadings: [], // Loading status queue
         start: 0, // Visible items start index
         startOffset: 0 // Start item offset
@@ -62,6 +63,7 @@
       tombHeight() {
         return this.tombstone ? this.$refs.tomb && this.$refs.tomb.offsetHeight : 0
       },
+      // 只要在加载中，就显示加载的模块
       loading() {
         return this.loadings.length
       }
@@ -81,7 +83,7 @@
       },
       offset: {
         type: Number,
-        default: 200 // The number of pixels of additional length to allow scrolling to.
+        default: 0 // The number of pixels of additional length to allow scrolling to.
       },
       loadmore: {
         type: Function,
@@ -136,10 +138,12 @@
           this.getItems()
         }
       },
+      // 真正ajax加载下一页面
       getItems() {
         this.loadings.push(1)
         this.loadmore()
       },
+      // 将数据拿回，然后先放到一个渲染队列，渲染后得到真实的每个item的高度，然后根据高度计算每个item的top值，和容器的总高度
       loadItems() {
         let loads = []
         let start = 0
@@ -172,6 +176,7 @@
         // update item height
         let cur = this.items[index]
         let dom = this.$refs['item' + index]
+        // 如果存在dom就更新高度,否则就采用占位符的高度
         if (dom && dom[0]) {
           cur.height = dom[0].offsetHeight
         } else {
